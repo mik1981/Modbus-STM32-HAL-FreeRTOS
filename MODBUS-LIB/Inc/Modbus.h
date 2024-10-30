@@ -132,6 +132,8 @@ typedef union {
 
 
 
+typedef void    (*t_pfReadCb)   ( uint16_t _u16BaseAddr,  uint8_t _u8Nbr );
+
 /**
  * @struct modbus_t
  * @brief
@@ -224,6 +226,7 @@ typedef struct
 
 #endif
 
+    t_pfReadCb  pfReadCb;   /*!< Pointer to a function called when a read register message is received, NULL if is not used */
 }
 modbusHandler_t;
 

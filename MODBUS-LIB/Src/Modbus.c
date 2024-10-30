@@ -64,14 +64,14 @@ const osThreadAttr_t myTaskModbusA_attributesTCP = {
 //osThreadId_t myTaskModbusAHandle;
 const osThreadAttr_t myTaskModbusB_attributes = {
     .name = "TaskModbusMaster",
-    .priority = (osPriority_t) osPriorityNormal,
+    .priority = (osPriority_t) osPriorityNormal1,
     .stack_size = 128 * 4
 };
 
 
 const osThreadAttr_t myTaskModbusB_attributesTCP = {
     .name = "TaskModbusMaster",
-    .priority = (osPriority_t) osPriorityNormal,
+    .priority = (osPriority_t) osPriorityNormal1,
     .stack_size = 256 * 4
 };
 
@@ -1589,7 +1589,11 @@ if(modH->xTypeHW != TCP_HW)
         else
         {
         	//transfer buffer to serial line DMA
-        	HAL_UART_Transmit_DMA(modH->port, modH->u8Buffer, modH->u8BufferSize);
+            if( SCB->CCR & SCB_CCR_DC_Msk )
+            {   SCB_CleanInvalidateDCache_by_Addr   ( (uint32_t*)modH->u8Buffer,  modH->u8BufferSize );
+            }
+            //
+            HAL_UART_Transmit_DMA       ( modH->port,  modH->u8Buffer,  modH->u8BufferSize );
 
         }
 #endif
@@ -1768,6 +1772,10 @@ int8_t process_FC3(modbusHandler_t *modH)
     uint8_t u8regsno = word( modH->u8Buffer[ NB_HI ], modH->u8Buffer[ NB_LO ] );
     uint8_t u8CopyBufferSize;
     uint16_t i;
+
+    if( modH->pfReadCb )
+    {   modH->pfReadCb  ( u16StartAdd,  u8regsno );
+    }
 
     modH->u8Buffer[ 2 ]       = u8regsno * 2;
     modH->u8BufferSize         = 3;
